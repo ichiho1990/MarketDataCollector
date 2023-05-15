@@ -9,22 +9,30 @@ class USBLSSeriesID(ABC):
         self.indicator = ''
         self.mapping_components_name = []
         self.mapping_table = {}
+        self.id_components = {}
 
     @abstractmethod
     def get_default_id_components(self):
         pass
 
     @abstractmethod
-    def view_id_components(self):
-        pass
-
-    @abstractmethod
     def get_series_id_format(self, code_list):
         pass
 
-    @abstractmethod
-    def generate_series_id_components(self, **kwargs):
-        pass
+    def view_id_components(self):
+        for component in self.id_components:
+
+            print(f'component name: "{component}", current value: "{self.id_components[component]}"')
+
+            if component in self.mapping_components_name:
+                print(
+                    f'code name of component "{component}" can be found by using get_us_bls_series_id_mapping_table method')
+
+    def generate_series_id_components(self,
+                                      **kwargs):
+
+        for i in kwargs:
+            self.id_components[i] = kwargs[i]
 
     @staticmethod
     def get_us_bls_series_id_mapping_table(indicator: str,
@@ -70,21 +78,6 @@ class USBLSSeriesIdCPI(USBLSSeriesID):
 
         return id_components
 
-    def view_id_components(self):
-
-        for component in self.id_components:
-
-            print(f'component name: "{component}", current value: "{self.id_components[component]}"')
-
-            if component in self.mapping_components_name:
-                print(
-                    f'code name of component "{component}" can be found by using get_us_bls_series_id_mapping_table method')
-
-    def generate_series_id_components(self,
-                                      **kwargs):
-
-        for i in kwargs:
-            self.id_components[i] = kwargs[i]
 
     def get_series_id_format(self,
                              code_list: Union[List, str] = None):
@@ -131,22 +124,6 @@ class USBLSSeriesIdPPI(USBLSSeriesID):
                          }
 
         return id_components
-
-    def view_id_components(self):
-
-        for component in self.id_components:
-
-            print(f'component name: "{component}", current value: "{self.id_components[component]}"')
-
-            if component in self.mapping_components_name:
-                print(
-                    f'code name of component "{component}" can be found by using get_us_bls_series_id_mapping_table method')
-
-    def generate_series_id_components(self,
-                                      **kwargs):
-
-        for i in kwargs:
-            self.id_components[i] = kwargs[i]
 
     def get_series_id_format(self,
                              code_list: Union[List, str] = None):
