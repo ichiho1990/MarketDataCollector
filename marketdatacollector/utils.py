@@ -1,8 +1,19 @@
 import requests
 import pandas as pd
 
-def get_bls_series_id_component_url(indicator,
-                                    component):
+
+def get_bls_series_id_component_url(indicator: str,
+                                    component: str) -> str:
+
+    """get bls series id component url for checking the code id based on the given indicator and component
+
+    Args:
+        indicator (str): string of the indicator prefix symbol. For example, CPI is 'CU'
+        component (str): string of the component name, for example, area component of CPI is 'area'
+
+    Returns: url (str): bls series id component url
+
+    """
 
     root_url = 'https://download.bls.gov/pub/time.series/'
 
@@ -11,7 +22,15 @@ def get_bls_series_id_component_url(indicator,
     return url
 
 
-def get_bls_series_id_component_mapping_table(bls_series_id_component_url):
+def get_bls_series_id_component_mapping_table(bls_series_id_component_url: str) -> pd.DataFrame:
+    """ get bls series id component mapping table from bls website
+
+    Args:
+        bls_series_id_component_url (str): url of bls series id component
+
+    Returns: dataframe of data from bls_series_id_component_url
+
+    """
 
     headers = {
         'User-agent':
