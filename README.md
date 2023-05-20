@@ -3,5 +3,5 @@ MarketDataCollector is developed to enable the collection of various market data
 
 Currently, Consumer Price Index and Producer Price Index Industry Data from US Bureau of Labor Statistics are developed.
 
-The instruction of usage can be found in main.py
+The instruction of usage can be found in macroeconomic/USBureauOfLaborStatisticsData/main.py
 
