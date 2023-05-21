@@ -54,16 +54,19 @@ class USBLSDataDownloader(ABC):
 
         return self.product.mapping_table[mapping_component_name]
 
-    def specify_data_indicator(self, indicator: dict):
+    def specify_data_indicator(self, indicator: dict = None):
         """generate and format series id components based on the input dictionary
 
         Args:
             indicator (dict): dictionary with keys of component name and values of the
-                             series id code for the series id.
+                              series id code for the series id.
+                              Default to None is default components values are used
 
         """
 
-        self.product.generate_series_id_components(**indicator)
+        if indicator:
+            for component_item in indicator.items():
+                self.product.id_components[component_item[0]] = component_item[1]
 
         self.series_id_list = self.product.get_series_id_format()
 
@@ -100,12 +103,33 @@ class USBLSDataDownloader(ABC):
              "annualaverage": annual_average}
         )
 
-        post = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers, timeout=2)
+        # post = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
 
-        if post.status_code == 200:
-            json_data = json.loads(post.text)
+        try:
+            post = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers, timeout=2)
+            post.raise_for_status()
 
+        except requests.exceptions.HTTPError as err:
+            print("Http Error:", err)
+
+        except requests.exceptions.ConnectionError as connerr:
+            print("Connection Error:", connerr)
+
+        except requests.exceptions.Timeout as timeouterr:
+            print("Timeout Error:", timeouterr)
+
+        except requests.exceptions.RequestException as err:
+            print("Other Request Error:", err)
+
+        json_data = json.loads(post.text)
+
+        try:
             self.output_data = json_data['Results']['series']
+
+        except Exception:
+            error_msg = ""
+            error = [error_msg + msg for msg in json_data['message']]
+            print(error[0])
 
     def format_bls_data(self) -> list:
         """Format the raw data downloaded from BLS

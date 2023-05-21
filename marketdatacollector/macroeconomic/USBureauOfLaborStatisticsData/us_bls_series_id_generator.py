@@ -49,21 +49,6 @@ class USBLSSeriesID(ABC):
                     f'code name of component "{component_item[0]}" '
                     f'can be found by using get_us_bls_series_id_mapping_table method')
 
-    def generate_series_id_components(self,
-                                      **kwargs: dict):
-        """generate series id components based on the input dictionary
-
-        Args:
-            **kwargs (dict): dictionary with keys of component name and values of the
-                             series id code for the series id.
-
-        Returns:
-
-        """
-
-        for component_item in kwargs.items():
-            self.id_components[component_item[0]] = component_item[1]
-
     @staticmethod
     def get_us_bls_series_id_mapping_table(indicator: str,
                                            mapping_components: Union[list, str]) -> dict:
@@ -170,6 +155,9 @@ class USBLSSeriesIdCPI(USBLSSeriesID):
         series_id = [component_item[1] for component_item in self.id_components.items() if
                      component_item[0] != enums.USBLSSeriesIdCPIComponents.ITEM.value]
 
+        if isinstance(self.id_components[enums.USBLSSeriesIdCPIComponents.ITEM.value], str):
+            self.id_components[enums.USBLSSeriesIdCPIComponents.ITEM.value] = [self.id_components[enums.USBLSSeriesIdCPIComponents.ITEM.value]]
+
         series_id_list = [''.join(series_id) + code for code in
                           self.id_components[enums.USBLSSeriesIdCPIComponents.ITEM.value]]
 
@@ -244,6 +232,9 @@ class USBLSSeriesIdPPI(USBLSSeriesID):
 
         series_id = [component_item[1] for component_item in self.id_components.items() if
                      component_item[0] != enums.USBLSSeriesIdPPIComponents.PRODUCT.value]
+
+        if isinstance(self.id_components[enums.USBLSSeriesIdPPIComponents.PRODUCT.value],str):
+            self.id_components[enums.USBLSSeriesIdPPIComponents.PRODUCT.value] = [self.id_components[enums.USBLSSeriesIdPPIComponents.PRODUCT.value]]
 
         series_id_list = [''.join(series_id) + code for code in
                           self.id_components[enums.USBLSSeriesIdPPIComponents.PRODUCT.value]]
