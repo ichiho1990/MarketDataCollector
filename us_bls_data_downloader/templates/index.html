@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body_block %}
+
+<body>
+    <h4>Choose the data name</h4>
+    <h6>Consumer Price Index-All Urban Consumers (CPI)</h6>
+    <button type="button">
+        <a href="{% url 'cpi' %}">CPI</a>
+    </button>
+
+    <h6>Producer Price Index Industry Data (PPI)</h6>
+    <button type="button">
+        <a href="{% url 'ppi' %}">PPI</a>
+    </button>
+
+</body>
+
+{% endblock %}

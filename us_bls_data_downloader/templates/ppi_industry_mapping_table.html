@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Django Level Two</title>
+</head>
+<body>
+    <h1>PPI Industry Code Description</h1>
+
+    <div class="djangotwo">
+
+        {% if ppi_industry_table %}
+
+            <table>
+                 <thead>
+                    <th>Industry Code</th>
+                    <th>Industry Name</th>
+                 </thead>
+
+
+            {% for data in ppi_industry_table %}
+            <tr>
+                <td>{{ data.industry_code }}</td>
+                <td>{{ data.industry_name }}</td>
+            </tr>
+            {% endfor %}
+            </table>
+            {% else %}
+                <p> No PPI Industry Code Description Found </p>
+            {% endif %}
+    </div>
+
+</body>
+</html>

@@ -19,10 +19,14 @@ from django.urls import path, include
 from us_bls_data_downloader_app import views
 
 urlpatterns = [
-    path('', views.input_form_view, name='input_form'),
-    # path('', views.index),
-    # path('', views.input_form_view_new, name='input_form'),
-    path('data_name/', views.showlist, name='data_name'),
+    path('', views.registration_api_key_view, name='base'),
+    path('index/', views.us_bls_index_view, name='index'),
+    path('cpi/', views.cpi_series_id_components_view, name='cpi'),
+    path('cpi_area/', views.cpi_series_id_components_area_view, name='cpi_area'),
+    path('cpi_item/', views.cpi_series_id_components_item_view, name='cpi_item'),
+    path('ppi/', views.ppi_series_id_components_view, name='ppi'),
+    path('ppi_industry/', views.ppi_series_id_components_industry_view, name='ppi_industry'),
+    path('ppi_product/', views.ppi_series_id_components_product_view, name='ppi_product'),
+    path('out/', views.output_view, name='out'),
     path('admin/', admin.site.urls),
-    # path('', views.IndexView.as_view()),
 ]

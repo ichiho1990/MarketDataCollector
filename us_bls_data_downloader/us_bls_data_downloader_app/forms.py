@@ -15,9 +15,26 @@ class FormInputName(forms.Form):
     end = forms.CharField(max_length=4)
 
 
-class DataNameForm(forms.ModelForm):
+class APIKeysForm(forms.ModelForm):
+
     class Meta:
-        model = models.USBLSDataName
-        fields = ('data_category',)
+        model = models.RegistrationAPIKeys
+        fields = ('api_key',)
+
+
+class CPISeriesIDComponentsForm(forms.ModelForm):
+
+    class Meta:
+        model = models.CPISeriesIDComponents
+
+        fields = ('api_key', 'seasonal', 'period', 'area', 'item', 'start', 'end')
+
+
+class PPISeriesIDComponentsForm(forms.ModelForm):
+
+    class Meta:
+        model = models.PPISeriesIDComponents
+
+        fields = ('api_key', 'seasonal', 'industry', 'product', 'start', 'end')
 
 

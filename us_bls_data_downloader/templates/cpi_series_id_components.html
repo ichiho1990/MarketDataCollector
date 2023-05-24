@@ -1,0 +1,44 @@
+{% extends "index.html" %}
+
+{% block body_block %}
+
+<h4>Consumer Price Index-All Urban Consumers (CPI)</h4>
+
+<h6>Please Fill in the form below</h6>
+  <form method="POST">
+    {% csrf_token %}
+    <h6>Select the API key to obtain data</h6>
+    {{ form.api_key }}
+    <h6>Indicate whether seasonal adjustment is applied</h6>
+    <h8>U=Unadjusted and S=Seasonally Adjusted</h8>
+    {{ form.seasonal }}
+    <h6>Indicate the frequency of observation</h6>
+    <h8>R=monthly or S=semi-annual data</h8>
+    {{ form.period }}
+    <h6>Indicate the area for which indexes are available</h6>
+    <h8>You can find the code of the corresponding area in the button below</h8>
+    <button type="button">
+        <a href="{% url 'cpi_area' %}">Area</a>
+    </button>
+    {{ form.area }}
+    <h6>Indicates the commodity, service, or special grouping for which indexes are available</h6>
+    <h8>You can find the code of the corresponding item in the button below</h8>
+    <button type="button">
+        <a href="{% url 'cpi_item' %}">Item</a>
+    </button>
+    {{ form.item }}
+    <h6>Please Fill in the start year</h6>
+    {{ form.start }}
+    <h6>Please Fill in the end year</h6>
+    {{ form.end }}
+
+    <input type="submit" class='btn btn-primary' value="Submit">
+
+  </form>
+
+
+
+
+{% endblock %}
+
+

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Django Level Two</title>
+</head>
+<body>
+    <h1>CPI Area Code Description</h1>
+    <div class="djangotwo">
+
+        {% if cpi_area_table %}
+
+            <table>
+                 <thead>
+                    <th>Area Code</th>
+                    <th>Area Name</th>
+                    <th>Display Level</th>
+                    <th>Selectable</th>
+                    <th>Sort Sequence</th>
+                 </thead>
+
+
+            {% for data in cpi_area_table %}
+            <tr>
+                <td>{{ data.area_code }}</td>
+                <td>{{ data.area_name }}</td>
+                <td>{{ data.display_level }}</td>
+                <td>{{ data.selectable }}</td>
+                <td>{{ data.sort_sequence }}</td>
+            </tr>
+            {% endfor %}
+            </table>
+            {% else %}
+                <p> No CPI Area Code Description Found </p>
+            {% endif %}
+    </div>
+
+</body>
+</html>

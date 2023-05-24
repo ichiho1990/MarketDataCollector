@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Django Level Two</title>
+</head>
+<body>
+    <div class="djangotwo">
+
+        {% if downloaded_data %}
+
+        <h1>Downloaded Data</h1>
+
+            <table>
+                 <thead>
+                    <th>Date</th>
+                    <th>Value</th>
+                    <th>Monthly Percentage Change</th>
+                    <th>Quarterly Percentage Change</th>
+                    <th>Semi-Annually Percentage Change</th>
+                    <th>Annually Percentage Change</th>
+                    <th>Footnotes</th>
+                 </thead>
+
+
+            {% for data in downloaded_data %}
+            <tr>
+                <td>{{ data.date }}</td>
+                <td>{{ data.value }}</td>
+                <td>{{ data.month_pct_changes }}</td>
+                <td>{{ data.quarter_pct_changes }}</td>
+                <td>{{ data.semi_annual_pct_changes }}</td>
+                <td>{{ data.annual_pct_changes }}</td>
+                <td>{{ data.footnotes }}</td>
+
+
+            </tr>
+            {% endfor %}
+            </table>
+            {% else %}
+                <p> No Data Downloaded </p>
+            {% endif %}
+    </div>
+
+</body>
+</html>

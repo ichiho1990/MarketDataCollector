@@ -1,137 +1,230 @@
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, UpdateView, TemplateView, View, ListView, DetailView
 from django.urls import reverse_lazy
+from django.http import response
 import pandas as pd
 import pickle
 from us_bls_data_downloader_app import forms, models
 from marketdatacollector import enums
 from marketdatacollector.macroeconomic.USBureauOfLaborStatisticsData import us_bls_data_downloader
 
-# Create your views here.
 
-def input_form_view(request):
-    form = forms.FormInputName()
+def registration_api_key_view(request):
+    form = forms.APIKeysForm()
 
     if request.method == 'POST':
-        form = forms.FormInputName(request.POST)
+        form = forms.APIKeysForm(request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+
+            return redirect('/index/')
+
+        else:
+            print('ERROR FORM INVALID')
+
+    return render(request, 'base.html', {'form': form})
+
+
+def us_bls_index_view(request):
+
+    return render(request, 'index.html')
+
+
+def cpi_series_id_components_view(request):
+    form = forms.CPISeriesIDComponentsForm()
+
+    model = models.USBLSDownloadedData
+
+    if request.method == 'POST':
+        # registration_key = request.POST.get('id_api_key')
+        form = forms.CPISeriesIDComponentsForm(request.POST)
 
         if form.is_valid():
-            api_key = form.cleaned_data['api_key']
-            data_category = form.cleaned_data['data_category']
+            form.save(commit=True)
 
-            if data_category.upper() == 'CPI':
-                downloader = us_bls_data_downloader.USBLSCPIDownloader(api_key)
-                data_indicator_components = ['seasonal_adjustment', 'periodicity', 'area', 'item']
-                data_indicator_components_dict = {component: form.cleaned_data[component] for component in
-                                                  data_indicator_components}
-                data_indicator_components_dict['item'] = data_indicator_components_dict['item'].split(',')
-            elif data_category.upper() == 'PPI':
-                downloader = us_bls_data_downloader.USBLSPPIDownloader(api_key)
-                data_indicator_components = ['seasonal_adjustment', 'industry', 'product']
-                data_indicator_components_dict = {component: form.cleaned_data[component] for component in
-                                                  data_indicator_components}
-                data_indicator_components_dict['product'] = data_indicator_components_dict['product'].split(',')
+            try:
 
+                downloader = us_bls_data_downloader.USBLSCPIDownloader(registration_key=form.cleaned_data['api_key'].api_key)
 
+                components = {enums.USBLSSeriesIdCPIComponents.SEASONAL.value: form.cleaned_data['seasonal'],
+                              enums.USBLSSeriesIdCPIComponents.PERIOD.value: form.cleaned_data['period'],
+                              enums.USBLSSeriesIdCPIComponents.AREA.value: form.cleaned_data['area'],
+                              enums.USBLSSeriesIdCPIComponents.ITEM.value: form.cleaned_data['item'],}
 
-            downloader.print_components()
-            downloader.specify_data_indicator(data_indicator_components_dict)
-            # define the data time series period and then download data
+                downloader.specify_data_indicator(components)
 
-            downloader.get_bls_data(start_year = form.cleaned_data['start'], end_year = form.cleaned_data['end'])
+                downloader.get_bls_data(start_year=form.cleaned_data['start'], end_year=form.cleaned_data['end'])
 
-            # format data and return output
-            out = downloader.format_bls_data()
-            for series in out:
-                print(f'series {series["series_title"]}')
-                print(pd.DataFrame(series['data']))
+                downloaded_data = downloader.format_bls_data()
 
-            with open('out_data.pkl', 'wb') as f:
-                pickle.dump(out, f)
+                for o in downloaded_data:
 
-    return render(request, 'input_form.html', {'form': form})
+                    data = o['data']
+                    series_title = o['series_title']
 
+                    for d in data:
+                        d['series_title'] = series_title
 
-class USBLSDataNameListView(ListView):
-    model = models.USBLSDataName
-    context_object_name = 'data_name'
+                    model.objects.bulk_create(
+                    model(**vals) for vals in pd.DataFrame(data).to_dict('records')
+                    )
 
+                # date_dict = {'assess_records': model.objects.order_by('series_title')}
 
-def showlist(request):
-    results=models.USBLSDataName.objects.all
-    return render(request, "data_name_form.html", {"showcity":results})
-#
-# def index(request):
-#     return render(request, 'index.html')
-#
-# class IndexView(TemplateView):
-#     template_name = "index.html"
-#     # form = forms.FormInputName()
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['injectme'] = 'Basic'
-#         return context
-#
-# class SchoolListView(ListView):
-#     model = models.School
-#
-# class SchoolDetailView(DetailView):
-#     model = models.School
-#     template_name = "us_bls_data_downloader_app/school_detail.html"
+                print(f'key: {pd.DataFrame(data)}')
+                print(data)
+
+                with open('out_data.pkl', 'wb') as f:
+                    pickle.dump(downloaded_data, f)
+
+                # After the operation was successful,
+                # redirect to some other page
+                return redirect('/out/')  # 4
+
+            except Exception as e:
+                print(e)
+                print(form.cleaned_data['api_key'].api_key)
 
 
-def input_form_view_new(request):
-    form = forms.FormInputName()
+        else:
+            print('ERROR FORM INVALID')
 
-    input_data_attribute_list = [item for item in models.USBLSDataName().__dict__]
+    return render(request, 'cpi_series_id_components.html', {'form': form})
+
+
+def cpi_series_id_components_area_view(request):
+
+    downloader = us_bls_data_downloader.USBLSCPIDownloader()
+
+    mapping_table = downloader.get_mapping_components_table('area')
+
+    model = models.CPISeriesIDAreaComponentsTable
+
+    model.objects.bulk_create(
+        model(**vals) for vals in mapping_table.to_dict('records')
+    )
+
+    date_dict = {'cpi_area_table': model.objects.order_by('created_date')}
+
+    return render(request, 'cpi_area_mapping_table.html', context=date_dict)
+
+
+def cpi_series_id_components_item_view(request):
+
+    downloader = us_bls_data_downloader.USBLSCPIDownloader()
+
+    mapping_table = downloader.get_mapping_components_table('item')
+
+    model = models.CPISeriesIDItemComponentsTable
+
+    model.objects.bulk_create(
+        model(**vals) for vals in mapping_table.to_dict('records')
+    )
+
+    date_dict = {'cpi_item_table': model.objects.order_by('created_date')}
+
+    return render(request, 'cpi_item_mapping_table.html', context=date_dict)
+
+
+def ppi_series_id_components_view(request):
+    form = forms.PPISeriesIDComponentsForm()
+
+    model = models.USBLSDownloadedData
 
     if request.method == 'POST':
-        form = forms.FormInputName(request.POST)
-        input_api_key = request.POST.get('input_api_key')
-        input_data_category = request.POST.get('input_data_category')
-        input_start = request.POST.get('input_start')
-        input_end = request.POST.get('input_end')
-        input_seasonal_adjustment = request.POST.get('input_seasonal_adjustment')
-        input_periodicity = request.POST.get('input_periodicity')
-        input_area = request.POST.get('input_area')
-        input_item = request.POST.get('input_item')
-        input_industry = request.POST.get('input_industry')
-        input_product = request.POST.get('input_product')
+        # registration_key = request.POST.get('id_api_key')
+        form = forms.PPISeriesIDComponentsForm(request.POST)
 
-        if input_seasonal_adjustment:
-            print('save seasonal adjustment')
-            usblsmodel = models.USBLSDataName()
-            for item in usblsmodel.__dict__:
-                input_name = 'input_' + item
+        if form.is_valid():
+            form.save(commit=True)
 
-                usblsmodel.__setattr__(item, request.POST.get(input_name))
+            try:
 
-            usblsmodel.save()
-            return redirect('/success/')
+                downloader = us_bls_data_downloader.USBLSPPIDownloader(registration_key=form.cleaned_data['api_key'].api_key)
 
-        elif input_data_category.upper() == 'CPI':
-            context = {'seasonal_adjustment': [code.name for code in enums.USBLSSeriesIdSeasonallyAdjustedCode],
-                       'period': [code.name for code in enums.USBLSSeriesIdPeriodCode]}
+                components = {enums.USBLSSeriesIdPPIComponents.SEASONAL.value: form.cleaned_data['seasonal'],
+                              enums.USBLSSeriesIdPPIComponents.INDUSTRY.value: form.cleaned_data['industry'],
+                              enums.USBLSSeriesIdPPIComponents.PRODUCT.value: form.cleaned_data['product'],}
 
-            for attribute in input_data_attribute_list:
-                if not attribute in context.keys():
-                    key = 'input_' + attribute
-                    context[key] = request.POST.get(key)
+                downloader.specify_data_indicator(components)
 
-            return render(request, 'input_form_new.html', context)
+                downloader.get_bls_data(start_year=form.cleaned_data['start'], end_year=form.cleaned_data['end'])
+
+                downloaded_data = downloader.format_bls_data()
+
+                for o in downloaded_data:
+
+                    data = o['data']
+                    series_title = o['series_title']
+
+                    for d in data:
+                        d['series_title'] = series_title
+
+                    model.objects.bulk_create(
+                    model(**vals) for vals in pd.DataFrame(data).to_dict('records')
+                    )
+
+                # date_dict = {'assess_records': model.objects.order_by('series_title')}
+
+                print(f'key: {pd.DataFrame(data)}')
+                print(data)
+
+                with open('out_data.pkl', 'wb') as f:
+                    pickle.dump(downloaded_data, f)
+
+                # After the operation was successful,
+                # redirect to some other page
+                return redirect('/out/')  # 4
+
+            except Exception as e:
+                print(e)
+                print(form.cleaned_data['api_key'].api_key)
 
 
-        elif input_data_category.upper() == 'PPI':
-            context = {'seasonal_adjustment': [code.name for code in enums.USBLSSeriesIdSeasonallyAdjustedCode],
-                       'period': 'NA'}
+        else:
+            print('ERROR FORM INVALID')
 
-            for attribute in input_data_attribute_list:
-                if not attribute in context.keys():
-                    key = 'input_' + attribute
-                    context[key] = request.POST.get(key)
-
-            return render(request, 'input_form_new.html', context)
+    return render(request, 'ppi_series_id_components.html', {'form': form})
 
 
+def ppi_series_id_components_industry_view(request):
 
+    downloader = us_bls_data_downloader.USBLSPPIDownloader()
+
+    mapping_table = downloader.get_mapping_components_table('industry')
+
+    model = models.PPISeriesIDIndustryComponentsTable
+
+    model.objects.bulk_create(
+        model(**vals) for vals in mapping_table.to_dict('records')
+    )
+
+    date_dict = {'ppi_industry_table': model.objects.order_by('created_date')}
+
+    return render(request, 'ppi_industry_mapping_table.html', context=date_dict)
+
+
+def ppi_series_id_components_product_view(request):
+
+    downloader = us_bls_data_downloader.USBLSPPIDownloader()
+
+    mapping_table = downloader.get_mapping_components_table('product')
+
+    model = models.PPISeriesIDProductComponentsTable
+
+    model.objects.bulk_create(
+        model(**vals) for vals in mapping_table.to_dict('records')
+    )
+
+    date_dict = {'ppi_product_table': model.objects.order_by('created_date')}
+
+    return render(request, 'ppi_product_mapping_table.html', context=date_dict)
+
+
+def output_view(request):
+
+    model = models.USBLSDownloadedData
+
+    date_dict = {'downloaded_data': model.objects.order_by('series_title')}
+
+    return render(request, 'out_put.html', context=date_dict)

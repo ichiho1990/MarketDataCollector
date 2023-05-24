@@ -1,0 +1,41 @@
+{% extends "index.html" %}
+
+{% block body_block %}
+
+<h4>Producer Price Index Industry Data (PPI)</h4>
+
+<h6>Please Fill in the form below</h6>
+  <form method="POST">
+    {% csrf_token %}
+    <h6>Select the API key to obtain data</h6>
+    {{ form.api_key }}
+    <h6>Indicate whether seasonal adjustment is applied</h6>
+    <h8>U=Unadjusted and S=Seasonally Adjusted</h8>
+    {{ form.seasonal }}
+    <h6>Indicate the industry for which indexes are available</h6>
+    <h8>You can find the code of the corresponding industry in the button below</h8>
+    <button type="button">
+        <a href="{% url 'ppi_industry' %}">Industry</a>
+    </button>
+    {{ form.industry }}
+    <h6>Indicate product codes are the numerical extensions to the industry codes</h6>
+    <h8>You can find the code of the corresponding product in the button below</h8>
+    <button type="button">
+        <a href="{% url 'ppi_product' %}">Product</a>
+    </button>
+    {{ form.product }}
+    <h6>Please Fill in the start year</h6>
+    {{ form.start }}
+    <h6>Please Fill in the end year</h6>
+    {{ form.end }}
+
+    <input type="submit" class='btn btn-primary' value="Submit">
+
+  </form>
+
+
+
+
+{% endblock %}
+
+

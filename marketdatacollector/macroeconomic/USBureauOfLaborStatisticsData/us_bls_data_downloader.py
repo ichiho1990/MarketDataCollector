@@ -200,7 +200,7 @@ class USBLSCPIDownloader(USBLSDataDownloader):
 
     """
 
-    def __init__(self, registration_key):
+    def __init__(self, registration_key=None):
         super().__init__(registration_key=registration_key)
 
     def get_us_bls_indicator(self) -> us_bls_series_id_generator.USBLSSeriesID:
@@ -214,7 +214,7 @@ class USBLSPPIDownloader(USBLSDataDownloader):
 
     """
 
-    def __init__(self, registration_key):
+    def __init__(self, registration_key=None):
         super().__init__(registration_key=registration_key)
 
     def get_us_bls_indicator(self) -> us_bls_series_id_generator.USBLSSeriesID:
